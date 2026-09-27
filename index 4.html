@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feathers &amp; Fossils — A Math Field Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --jungle-deep:#123529;
+    --jungle-mid:#1F5D45;
+    --canopy:#5FAE86;
+    --paper:#FBF3DE;
+    --paper-shadow:#E9DCB8;
+    --ink:#20301F;
+    --ink-soft:#4B5A44;
+    --amber:#F2A65A;
+    --coral:#E8604C;
+    --sun:#FFCF56;
+    --sky:#CDEDE0;
+    --ok:#3E8A5B;
+    --focus:#1F5D45;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    font-family:'Nunito',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(95,174,134,0.35), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 110% 10%, rgba(255,207,86,0.18), transparent 55%),
+      linear-gradient(180deg, var(--jungle-deep) 0%, var(--jungle-mid) 55%, #0E2A20 100%);
+    overflow-x:hidden;
+    position:relative;
+  }
+  h1,h2,h3,.display{font-family:'Baloo 2', system-ui, sans-serif;}
+
+  /* ---------- background scenery ---------- */
+  .scene-bg{position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden;}
+  .hill{position:absolute; bottom:-4%; left:50%; transform:translateX(-50%); width:140%; opacity:.55;}
+  .leaf{position:absolute; opacity:.5; animation:drift 16s ease-in-out infinite;}
+  .leaf.l2{animation-duration:21s; animation-delay:-4s;}
+  .leaf.l3{animation-duration:13s; animation-delay:-8s;}
+  @keyframes drift{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-18px) rotate(6deg); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .leaf{animation:none;}
+  }
+
+  /* ---------- layout ---------- */
+  main{
+    position:relative; z-index:1;
+    max-width:760px; margin:0 auto;
+    padding:28px 18px 60px;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:stretch; justify-content:flex-start;
+  }
+  .journal{
+    background:var(--paper);
+    border-radius:18px;
+    box-shadow: 0 2px 0 var(--paper-shadow), 0 24px 60px -20px rgba(0,0,0,0.55);
+    padding:clamp(20px, 4vw, 40px);
+    position:relative;
+    border:1px solid rgba(0,0,0,0.04);
+  }
+  .journal::before{
+    content:"";
+    position:absolute; inset:10px;
+    border:2px dashed rgba(32,48,31,0.12);
+    border-radius:12px;
+    pointer-events:none;
+  }
+  .screen{ display:none; animation:reveal .5s ease both; }
+  .screen.active{ display:block; }
+  @keyframes reveal{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  /* ---------- start screen ---------- */
+  .brand-row{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .brand-row svg{ flex:0 0 auto; }
+  .kicker{ color:var(--ok); font-weight:700; font-size:0.95rem; margin:0 0 2px; }
+  h1.title{ font-size:clamp(1.7rem, 4.5vw, 2.5rem); margin:0 0 6px; color:var(--jungle-deep); line-height:1.1; }
+  .subtitle{ font-size:1.05rem; color:var(--ink-soft); line-height:1.5; max-width:52ch; }
+  .start-scene{ display:flex; justify-content:center; margin:22px 0; }
+  .start-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:20px 0 24px; }
+  .fact-chip{
+    background:#fff; border-radius:12px; padding:12px 10px; text-align:center;
+    border:1px solid var(--paper-shadow); font-weight:700; font-size:0.85rem; color:var(--ink-soft);
+  }
+  .fact-chip span{ display:block; font-size:1.5rem; margin-bottom:4px; }
+
+  .btn{
+    font-family:'Baloo 2', system-ui, sans-serif;
+    font-weight:700; font-size:1.05rem;
+    border:none; border-radius:999px;
+    padding:14px 28px;
+    cursor:pointer;
+    background:var(--coral); color:#fff;
+    box-shadow:0 6px 0 #b8402f;
+    transition:transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover{ filter:brightness(1.04); }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #b8402f; }
+  .btn:focus-visible{ outline:3px solid var(--focus); outline-offset:3px; }
+  .btn.secondary{ background:var(--jungle-mid); box-shadow:0 6px 0 #0e2a20; }
+  .btn.ghost{ background:transparent; color:var(--jungle-deep); box-shadow:none; border:2px solid var(--paper-shadow); padding:10px 18px; font-size:0.9rem; }
+
+  /* ---------- trail / progress ---------- */
+  .trail-wrap{ margin:4px 0 22px; }
+  .world-banner{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
+  .world-name{ display:flex; align-items:center; gap:8px; font-weight:800; color:var(--jungle-deep); font-size:1.05rem; }
+  .world-name svg{ flex:0 0 auto; }
+  .q-counter{ font-weight:700; color:var(--ink-soft); font-size:0.9rem; }
+  .trail{ display:flex; gap:6px; }
+  .track{ position:relative; height:14px; background:var(--paper-shadow); border-radius:999px; overflow:hidden; flex:1; }
+  .track-fill{ position:absolute; inset:0 auto 0 0; width:0%; background:linear-gradient(90deg, var(--amber), var(--coral)); border-radius:999px; transition:width .4s ease; }
+  .world-dots{ display:flex; gap:6px; margin-left:10px; }
+  .world-dot{ width:10px; height:10px; border-radius:50%; background:var(--paper-shadow); }
+  .world-dot.done{ background:var(--ok); }
+  .world-dot.current{ background:var(--sun); }
+
+  /* ---------- quiz card ---------- */
+  .diagram-area{ display:flex; justify-content:center; align-items:center; min-height:120px; margin:14px 0 10px; flex-wrap:wrap; gap:10px; }
+  .q-row{ display:flex; align-items:flex-start; gap:10px; margin-bottom:14px; }
+  .q-text{ font-size:1.15rem; font-weight:700; color:var(--jungle-deep); line-height:1.45; flex:1; }
+  .speak-btn{
+    flex:0 0 auto; width:38px; height:38px; border-radius:50%;
+    border:2px solid var(--paper-shadow); background:#fff; cursor:pointer; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .speak-btn:hover{ background:var(--sky); }
+  .speak-btn:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+
+  .choices{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+  @media (max-width:480px){ .choices{ grid-template-columns:1fr; } }
+  .choice{
+    font-family:'Nunito',sans-serif; font-weight:700; font-size:1.05rem;
+    background:#fff; border:2px solid var(--paper-shadow); border-radius:14px;
+    padding:14px 16px; cursor:pointer; text-align:left; color:var(--ink);
+    transition:border-color .12s ease, transform .08s ease;
+  }
+  .choice:hover:not(:disabled){ border-color:var(--amber); }
+  .choice:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+  .choice:disabled{ cursor:default; }
+  .choice.correct{ border-color:var(--ok); background:#EAF7EE; }
+  .choice.wrong{ border-color:var(--coral); background:#FCEBE8; }
+
+  .number-row{ display:flex; gap:10px; margin-top:8px; align-items:center; flex-wrap:wrap; }
+  .number-row input{
+    font-family:'Baloo 2', sans-serif; font-size:1.3rem; font-weight:700;
+    width:110px; padding:10px 14px; border-radius:12px; border:2px solid var(--paper-shadow);
+    text-align:center; color:var(--jungle-deep);
+  }
+  .number-row input:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+
+  .feedback{
+    margin-top:16px; padding:16px; border-radius:14px; display:none; gap:14px; align-items:center;
+  }
+  .feedback.show{ display:flex; animation:reveal .35s ease both; }
+  .feedback.good{ background:#EAF7EE; border:2px solid var(--ok); }
+  .feedback.retry{ background:#FFF6E6; border:2px solid var(--amber); }
+  .feedback-text{ flex:1; }
+  .feedback-text b{ display:block; margin-bottom:2px; }
+  .feedback-text p{ margin:0; color:var(--ink-soft); font-size:0.95rem; }
+
+  .quiz-footer{ display:flex; justify-content:flex-end; margin-top:18px; }
+
+  .stat-strip{ display:flex; gap:16px; margin:6px 0 4px; flex-wrap:wrap; }
+  .stat{ display:flex; align-items:center; gap:6px; font-weight:800; color:var(--jungle-deep); font-size:0.95rem; }
+
+  /* ---------- results ---------- */
+  .certificate{ text-align:center; padding:6px 0 4px; }
+  .certificate .ring{ display:flex; justify-content:center; margin-bottom:6px; }
+  .result-stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:22px 0; }
+  .result-card{ background:#fff; border:1px solid var(--paper-shadow); border-radius:14px; padding:16px 8px; }
+  .result-card .num{ font-family:'Baloo 2',sans-serif; font-size:1.8rem; font-weight:800; color:var(--coral); }
+  .result-card .lbl{ font-size:0.8rem; color:var(--ink-soft); font-weight:700; margin-top:2px; }
+  .species-row{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin:18px 0 8px; }
+  .species-card{ background:#fff; border:1px solid var(--paper-shadow); border-radius:14px; padding:12px; width:150px; text-align:center; }
+  .species-card .name{ font-weight:800; color:var(--jungle-deep); margin:6px 0 2px; font-size:0.95rem; }
+  .species-card .fact{ font-size:0.78rem; color:var(--ink-soft); line-height:1.3; }
+  .actions-row{ display:flex; gap:12px; justify-content:center; margin-top:26px; flex-wrap:wrap; }
+
+  .sr-only{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<div class="scene-bg" aria-hidden="true">
+  <svg class="hill" viewBox="0 0 1000 220" preserveAspectRatio="none">
+    <path d="M0,220 L0,140 C150,90 250,170 400,120 C550,70 650,150 800,110 C900,85 950,110 1000,100 L1000,220 Z" fill="#0E2A20"/>
+    <path d="M0,220 L0,180 C200,140 350,190 520,160 C680,132 780,175 1000,150 L1000,220 Z" fill="#153E30"/>
+  </svg>
+  <svg class="leaf l1" style="top:8%; left:6%;" width="46" height="46" viewBox="0 0 40 40"><path d="M20 2 C34 10 34 30 20 38 C6 30 6 10 20 2 Z" fill="#2E6B4F"/><path d="M20 4 L20 36" stroke="#1B4632" stroke-width="1.5"/></svg>
+  <svg class="leaf l2" style="top:22%; right:8%;" width="34" height="34" viewBox="0 0 40 40"><path d="M20 2 C34 10 34 30 20 38 C6 30 6 10 20 2 Z" fill="#3C7A5A"/><path d="M20 4 L20 36" stroke="#1B4632" stroke-width="1.5"/></svg>
+  <svg class="leaf l3" style="bottom:14%; left:12%;" width="30" height="30" viewBox="0 0 40 40"><path d="M20 2 C34 10 34 30 20 38 C6 30 6 10 20 2 Z" fill="#2E6B4F"/></svg>
+</div>
+
+<main>
+  <div class="journal">
+
+    <!-- START SCREEN -->
+    <section id="screen-start" class="screen active">
+      <p class="kicker">A math field journal</p>
+      <div class="brand-row">
+        <h1 class="title">Feathers &amp; Fossils</h1>
+      </div>
+      <p class="subtitle">Zara the macaw needs help exploring the Fossil Trail. Answer math questions to hatch dinosaur eggs, collect bright feathers, and fill your field journal with new discoveries.</p>
+
+      <div class="start-scene" id="start-art"></div>
+
+      <div class="start-grid">
+        <div class="fact-chip"><span>🥚</span>3 lands to explore</div>
+        <div class="fact-chip"><span>🦖</span>15 puzzles to solve</div>
+        <div class="fact-chip"><span>🪶</span>Feathers &amp; facts to collect</div>
+      </div>
+
+      <button class="btn" id="start-btn">Begin the Expedition</button>
+    </section>
+
+    <!-- QUIZ SCREEN -->
+    <section id="screen-quiz" class="screen">
+      <div class="trail-wrap">
+        <div class="world-banner">
+          <div class="world-name">
+            <span id="world-icon"></span>
+            <span id="world-name-text">Feather Forest</span>
+          </div>
+          <div class="q-counter" id="q-counter">Question 1 of 15</div>
+        </div>
+        <div class="trail">
+          <div class="track"><div class="track-fill" id="track-fill"></div></div>
+          <div class="world-dots">
+            <span class="world-dot" id="dot-0"></span>
+            <span class="world-dot" id="dot-1"></span>
+            <span class="world-dot" id="dot-2"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat">🪶 <span id="feather-count">0</span></div>
+        <div class="stat">🥚 <span id="egg-count">0</span></div>
+      </div>
+
+      <div class="diagram-area" id="diagram-area"></div>
+
+      <div class="q-row">
+        <p class="q-text" id="question-text">Question text goes here.</p>
+        <button class="speak-btn" id="speak-btn" title="Read the question aloud" aria-label="Read the question aloud">🔊</button>
+      </div>
+
+      <div id="answer-area"></div>
+
+      <div class="feedback" id="feedback">
+        <div id="feedback-icon"></div>
+        <div class="feedback-text">
+          <b id="feedback-title">Nice work!</b>
+          <p id="feedback-explain">Explanation goes here.</p>
+        </div>
+      </div>
+
+      <div class="quiz-footer">
+        <button class="btn" id="next-btn" style="display:none;">Next</button>
+      </div>
+    </section>
+
+    <!-- RESULTS SCREEN -->
+    <section id="screen-results" class="screen">
+      <div class="certificate">
+        <div class="ring" id="cert-art"></div>
+        <h2 class="title" style="font-size:1.6rem;">Field Journal Complete!</h2>
+        <p class="subtitle" style="margin:0 auto;">Zara says thank you for exploring the whole Fossil Trail with her.</p>
+      </div>
+
+      <div class="result-stats">
+        <div class="result-card"><div class="num" id="res-feathers">0</div><div class="lbl">Feathers collected</div></div>
+        <div class="result-card"><div class="num" id="res-accuracy">0%</div><div class="lbl">Correct answers</div></div>
+        <div class="result-card"><div class="num" id="res-eggs">0</div><div class="lbl">Eggs hatched</div></div>
+      </div>
+
+      <h3 style="text-align:center; color:var(--jungle-deep); font-size:1.05rem;">Species discovered</h3>
+      <div class="species-row" id="species-row"></div>
+
+      <div class="actions-row">
+        <button class="btn" id="replay-btn">Play Again</button>
+      </div>
+    </section>
+
+  </div>
+  <p style="text-align:center; color:var(--sky); font-size:0.75rem; margin-top:14px; opacity:.7;">Made for a young explorer who loves parrots, dinosaurs, and a good math puzzle.</p>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     ICON LIBRARY — small reusable inline SVGs
+     ============================================================ */
+  /* Cockatiel-style parrot, drawn to match the user's reference photo:
+     bold black outline, grey body, yellow crest + face, orange cheek patch. */
+  function svgParrot(size){
+    var ink = "#1A1A1A";
+    return '<svg width="'+size+'" height="'+(size*1.32)+'" viewBox="0 0 110 145" role="img" aria-label="cockatiel">'
+      + '<path d="M74 86 C96 72 108 44 100 24 C90 42 82 68 74 90 Z" fill="#C7C2BB" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M35 120 C34 128 32 134 26 140" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M18 140 L34 140" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M56 122 C57 130 58 135 54 141" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M44 141 L62 141" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="55" cy="96" rx="27" ry="31" fill="#8B8680" stroke="'+ink+'" stroke-width="3"/>'
+      + '<path d="M42 76 C50 80 56 88 55 98" stroke="#6E6A64" stroke-width="2" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="51" cy="114" rx="15" ry="17" fill="#F4F1EA" stroke="'+ink+'" stroke-width="2.5"/>'
+      + '<circle cx="39" cy="58" r="20" fill="#F3DE73" stroke="'+ink+'" stroke-width="3"/>'
+      + '<path d="M30 40 C26 24 30 10 37 4 C36 20 36 34 34 44 Z" fill="#F3DE73" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M38 38 C37 20 43 6 51 2 C48 18 46 32 43 42 Z" fill="#F3DE73" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M46 42 C48 26 55 14 62 12 C57 26 52 38 49 46 Z" fill="#F3DE73" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M17 58 C12 57 9 61 12 65 C16 69 24 68 29 64 C26 60 21 58 17 58 Z" fill="#E4C08E" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<circle cx="46" cy="66" r="7" fill="#F0A868"/>'
+      + '<circle cx="34" cy="56" r="3.4" fill="'+ink+'"/>'
+      + '<circle cx="35.3" cy="54.8" r="1.1" fill="#fff"/>'
+      + '</svg>';
+  }
+
+  function svgEgg(size, color, cracked){
+    color = color || "#FBF3DE";
+    var speckles = '<circle cx="40" cy="35" r="2.6" fill="#D9C98A"/><circle cx="58" cy="50" r="2.2" fill="#D9C98A"/><circle cx="45" cy="60" r="1.8" fill="#D9C98A"/>';
+    var crack = cracked ? '<path d="M50 20 L45 34 L54 38 L47 52 L58 58" stroke="#1A1A1A" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' : '';
+    return '<svg width="'+size+'" height="'+(size*1.2)+'" viewBox="0 0 100 120" role="img" aria-label="egg">'
+      + '<ellipse cx="50" cy="65" rx="38" ry="48" fill="'+color+'" stroke="#1A1A1A" stroke-width="3.5"/>'
+      + speckles + crack
+      + '</svg>';
+  }
+
+  function svgFootprint(size, color, rotate){
+    color = color || "#2E6B4F";
+    rotate = rotate || 0;
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 60 60" style="transform:rotate('+rotate+'deg)" role="img" aria-label="footprint">'
+      + '<ellipse cx="30" cy="38" rx="16" ry="19" fill="'+color+'" stroke="#1A1A1A" stroke-width="2.6"/>'
+      + '<ellipse cx="14" cy="14" rx="6" ry="8" fill="'+color+'" stroke="#1A1A1A" stroke-width="2.2"/>'
+      + '<ellipse cx="30" cy="8" rx="6.5" ry="9" fill="'+color+'" stroke="#1A1A1A" stroke-width="2.2"/>'
+      + '<ellipse cx="46" cy="14" rx="6" ry="8" fill="'+color+'" stroke="#1A1A1A" stroke-width="2.2"/>'
+      + '</svg>';
+  }
+
+  function svgFeather(size, color){
+    color = color || "#E8604C";
+    return '<svg width="'+size*0.55+'" height="'+size+'" viewBox="0 0 40 100" role="img" aria-label="feather">'
+      + '<path d="M20 2 C34 20 34 70 20 98 C6 70 6 20 20 2 Z" fill="'+color+'" stroke="#1A1A1A" stroke-width="2.6" stroke-linejoin="round"/>'
+      + '<line x1="20" y1="8" x2="20" y2="94" stroke="#1A1A1A" stroke-width="1.6" opacity="0.55"/>'
+      + '</svg>';
+  }
+
+  /* Triceratops, drawn to match the user's reference photo:
+     bold black outline, sky-blue body, cream horns/frill-spikes/back-spots. */
+  function svgTriceratops(size){
+    var ink = "#1A1A1A", body = "#8FB8DD", horn = "#F5E7B8";
+    return '<svg width="'+size+'" height="'+(size*0.75)+'" viewBox="0 0 160 120" role="img" aria-label="triceratops">'
+      + '<path d="M46 60 C30 58 20 51 24 42 C34 45 42 52 48 60 Z" fill="'+body+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M44 82 C42 92 40 100 34 106" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M28 106 L42 106" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M64 86 C64 96 63 102 60 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M52 108 L66 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M90 86 C91 96 91 102 88 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M80 108 L94 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M108 82 C109 92 109 98 106 105" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M98 105 L112 105" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="78" cy="68" rx="42" ry="26" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>'
+      + '<ellipse cx="68" cy="84" rx="20" ry="12" fill="#DCEBF5"/>'
+      + '<ellipse cx="58" cy="56" rx="5.5" ry="3.8" fill="'+horn+'" stroke="'+ink+'" stroke-width="2" transform="rotate(-10 58 56)"/>'
+      + '<ellipse cx="72" cy="52" rx="6" ry="4" fill="'+horn+'" stroke="'+ink+'" stroke-width="2" transform="rotate(-15 72 52)"/>'
+      + '<ellipse cx="90" cy="51" rx="6" ry="4" fill="'+horn+'" stroke="'+ink+'" stroke-width="2" transform="rotate(-5 90 51)"/>'
+      + '<path d="M100 12 C124 4 145 18 142 42 C140 58 126 66 111 62 C117 44 112 26 100 12 Z" fill="'+body+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M118 8 L124 20 L131 7 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<path d="M133 12 L140 23 L146 11 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<path d="M142 26 L150 34 L152 21 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<path d="M141 42 L150 46 L148 34 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="2.5" stroke-linejoin="round"/>'
+      + '<ellipse cx="112" cy="56" rx="25" ry="22" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>'
+      + '<path d="M116 70 C128 67 139 71 135 79 C129 85 118 81 112 75 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M100 40 C96 24 100 8 108 4 C107 18 105 32 103 44 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M113 41 C113 24 121 10 129 8 C124 22 119 34 117 46 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M120 56 C120 45 126 38 132 38 C130 47 126 54 124 61 Z" fill="'+horn+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<circle cx="104" cy="52" r="6.5" fill="'+ink+'"/>'
+      + '<circle cx="106.3" cy="49.8" r="2" fill="#fff"/>'
+      + '</svg>';
+  }
+
+  /* Stegosaurus and young rex, drawn in the same bold-outline style so the
+     whole cast feels like one consistent set of characters. */
+  function svgStegosaurus(size){
+    var ink = "#1A1A1A", body = "#6FBE97", plate = "#F5E7B8";
+    return '<svg width="'+size+'" height="'+(size*0.75)+'" viewBox="0 0 160 120" role="img" aria-label="stegosaurus">'
+      + '<path d="M46 60 C30 58 20 51 24 42 C34 45 42 52 48 60 Z" fill="'+body+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M44 82 C42 92 40 100 34 106" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M28 106 L42 106" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M64 86 C64 96 63 102 60 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M52 108 L66 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M90 86 C91 96 91 102 88 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M80 108 L94 108" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M108 82 C109 92 109 98 106 105" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M98 105 L112 105" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<ellipse cx="80" cy="68" rx="44" ry="25" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>'
+      + '<ellipse cx="70" cy="82" rx="20" ry="11" fill="#E4F5EA"/>'
+      + '<path d="M46 34 L58 14 L66 36 Z" fill="'+plate+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M64 26 L76 6 L84 30 Z" fill="'+plate+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M82 26 L94 8 L100 32 Z" fill="'+plate+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M100 32 L110 16 L114 38 Z" fill="'+plate+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<ellipse cx="118" cy="58" rx="22" ry="18" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>'
+      + '<path d="M124 68 C134 66 141 70 137 76 C132 81 123 78 119 73 Z" fill="'+plate+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<circle cx="114" cy="54" r="6.5" fill="'+ink+'"/>'
+      + '<circle cx="116.2" cy="51.8" r="2" fill="#fff"/>'
+      + '</svg>';
+  }
+
+  function svgRex(size){
+    var ink = "#1A1A1A", body = "#E8604C";
+    return '<svg width="'+(size*0.93)+'" height="'+size+'" viewBox="0 0 130 140" role="img" aria-label="young tyrannosaur">'
+      + '<path d="M30 100 C34 112 44 116 52 112" stroke="'+ink+'" stroke-width="3" fill="none" stroke-linecap="round"/>'
+      + '<path d="M40 116 C38 124 36 130 30 136" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M22 136 L38 136" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M64 118 C64 126 63 131 58 137" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M50 137 L66 137" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M18 46 C6 40 4 30 12 26 C20 30 26 38 26 46 Z" fill="'+body+'" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<ellipse cx="58" cy="78" rx="36" ry="38" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>'
+      + '<ellipse cx="50" cy="96" rx="16" ry="20" fill="#F7C9BE"/>'
+      + '<path d="M28 62 C20 66 14 72 16 78" stroke="'+ink+'" stroke-width="3.4" fill="none" stroke-linecap="round"/>'
+      + '<circle cx="73" cy="48" r="26" fill="'+body+'" stroke="'+ink+'" stroke-width="3"/>'
+      + '<path d="M92 54 C102 52 110 56 106 62 C101 67 91 64 87 59 Z" fill="#F7C9BE" stroke="'+ink+'" stroke-width="3" stroke-linejoin="round"/>'
+      + '<path d="M89 58 L92 63 L95 58 Z M97 59 L100 64 L103 59 Z" fill="'+ink+'"/>'
+      + '<circle cx="66" cy="40" r="6.5" fill="'+ink+'"/>'
+      + '<circle cx="68.3" cy="37.8" r="2" fill="#fff"/>'
+      + '</svg>';
+  }
+
+  function svgSun(size){
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 100 100" role="img" aria-label="sun">'
+      + '<circle cx="50" cy="50" r="24" fill="#FFCF56" stroke="#1A1A1A" stroke-width="3"/>'
+      + '<g stroke="#1A1A1A" stroke-width="4" stroke-linecap="round">'
+      + '<line x1="50" y1="8" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="92"/>'
+      + '<line x1="8" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="92" y2="50"/>'
+      + '<line x1="20" y1="20" x2="28" y2="28"/><line x1="72" y1="72" x2="80" y2="80"/>'
+      + '<line x1="80" y1="20" x2="72" y2="28"/><line x1="28" y1="72" x2="20" y2="80"/>'
+      + '</g></svg>';
+  }
+
+  /* ============================================================
+     SMALL HELPERS
+     ============================================================ */
+  function randInt(min, max){ return Math.floor(Math.random()*(max-min+1))+min; }
+  function shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+  function uniquePush(set, val){ if(set.indexOf(val)===-1) set.push(val); return set; }
+
+  // Builds a 4-choice list (1 correct + up to 3 wrong), formatted with fmt(), shuffled.
+  function makeChoices(correct, wrongCandidates, fmt){
+    fmt = fmt || function(x){ return String(x); };
+    var wrongs = [];
+    wrongCandidates.forEach(function(w){
+      if(w !== correct) uniquePush(wrongs, w);
+    });
+    // top up with nearby random values if we don't have enough distinct wrongs
+    var guard = 0;
+    while(wrongs.length < 3 && guard < 50){
+      guard++;
+      var delta = randInt(1,6) * (Math.random()<0.5?-1:1);
+      var candidate = correct + delta;
+      if(candidate >= 0 && candidate !== correct) uniquePush(wrongs, candidate);
+    }
+    wrongs = shuffle(wrongs).slice(0,3);
+    var all = shuffle([correct].concat(wrongs));
+    return all.map(function(v){ return { value:v, label:fmt(v) }; });
+  }
+
+  /* ============================================================
+     DIAGRAM BUILDERS
+     ============================================================ */
+  function diagramArray(rows, cols, iconFn){
+    var html = '<div style="display:grid; grid-template-columns:repeat('+cols+', 1fr); gap:6px; justify-items:center;">';
+    for(var i=0;i<rows*cols;i++){ html += iconFn(30); }
+    html += '</div>';
+    return html;
+  }
+
+  function diagramGroups(groups, perGroup, iconFn){
+    var html = '<div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">';
+    for(var g=0; g<groups; g++){
+      html += '<div style="display:flex; gap:3px; padding:8px; background:#fff; border:2px dashed var(--paper-shadow); border-radius:10px;">';
+      for(var i=0;i<perGroup;i++){ html += iconFn(24); }
+      html += '</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function diagramFractionBar(num, den, colorA, colorB){
+    var segs = '';
+    var segW = 240/den;
+    for(var i=0;i<den;i++){
+      segs += '<rect x="'+(i*segW)+'" y="0" width="'+(segW-2)+'" height="60" rx="6" fill="'+(i<num?colorA:colorB)+'" stroke="#fff" stroke-width="2"/>';
+    }
+    return '<svg width="250" height="60" viewBox="0 0 240 60">'+segs+'</svg>';
+  }
+
+  function diagramFractionCircle(num, den, colorA, colorB){
+    var cx=50, cy=50, r=44;
+    var paths = '';
+    var anglePer = 360/den;
+    for(var i=0;i<den;i++){
+      var a0 = (anglePer*i - 90) * Math.PI/180;
+      var a1 = (anglePer*(i+1) - 90) * Math.PI/180;
+      var x0 = cx + r*Math.cos(a0), y0 = cy + r*Math.sin(a0);
+      var x1 = cx + r*Math.cos(a1), y1 = cy + r*Math.sin(a1);
+      var large = anglePer > 180 ? 1 : 0;
+      paths += '<path d="M'+cx+' '+cy+' L'+x0+' '+y0+' A'+r+' '+r+' 0 '+large+' 1 '+x1+' '+y1+' Z" fill="'+(i<num?colorA:colorB)+'" stroke="#fff" stroke-width="2"/>';
+    }
+    return '<svg width="110" height="110" viewBox="0 0 100 100">'+paths+'</svg>';
+  }
+
+  function diagramRectGrid(w,h,iconFn,label){
+    var html = '<div style="text-align:center;">';
+    html += '<div style="display:inline-grid; grid-template-columns:repeat('+w+', 1fr); gap:2px; background:#fff; padding:8px; border-radius:10px; border:1px solid var(--paper-shadow);">';
+    for(var i=0;i<w*h;i++){ html += iconFn(22); }
+    html += '</div>';
+    if(label) html += '<div style="margin-top:6px; font-weight:700; color:var(--ink-soft); font-size:0.85rem;">'+label+'</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function diagramPerimeterRect(w,h){
+    var scale = 26;
+    var W = w*scale, H = h*scale;
+    return '<svg width="'+(W+60)+'" height="'+(H+50)+'" viewBox="0 0 '+(W+60)+' '+(H+50)+'">'
+      + '<rect x="30" y="10" width="'+W+'" height="'+H+'" fill="none" stroke="#2E6B4F" stroke-width="4" rx="4"/>'
+      + '<text x="'+(30+W/2)+'" y="'+(H+34)+'" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="15" fill="#20301F">'+w+' m</text>'
+      + '<text x="14" y="'+(10+H/2)+'" text-anchor="middle" font-family="Nunito" font-weight="700" font-size="15" fill="#20301F" transform="rotate(-90 14 '+(10+H/2)+')">'+h+' m</text>'
+      + '</svg>';
+  }
+
+  function diagramSequence(items){
+    var html = '<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center;">';
+    items.forEach(function(it){
+      html += '<div style="display:flex; flex-direction:column; align-items:center;">'+it+'</div>';
+    });
+    return html+'</div>';
+  }
+
+  function qmark(size){
+    return '<div style="width:'+size+'px; height:'+size+'px; display:flex; align-items:center; justify-content:center; font-family:Baloo 2; font-size:'+(size*0.6)+'px; font-weight:800; color:#fff; background:var(--coral); border-radius:12px;">?</div>';
+  }
+
+  /* ============================================================
+     QUESTION GENERATORS  (each returns a fresh randomized question)
+     world: 0,1,2
+     ============================================================ */
+  var GENERATORS = [];
+
+  // --- WORLD 0: Feather Forest — multiplication & division ---
+  GENERATORS.push(function(){ // A: array multiplication
+    var rows = randInt(3,9), cols = randInt(3,9);
+    var correct = rows*cols;
+    var wrongs = [rows*(cols-1), rows*(cols+1), (rows-1)*cols, correct+randInt(2,5)];
+    return {
+      world:0,
+      diagram: diagramArray(rows, cols, function(s){ return svgEgg(s, "#F2A65A", false); }),
+      text: "Zara spotted "+rows+" rows of eggs with "+cols+" eggs in each row. How many eggs are there in total?",
+      type:"choice",
+      choices: makeChoices(correct, wrongs),
+      correct: correct,
+      explain: rows+" rows \u00D7 "+cols+" eggs = "+correct+" eggs. Multiplying counts equal groups all at once."
+    };
+  });
+
+  GENERATORS.push(function(){ // B: division sharing
+    var perParrot = randInt(3,9);
+    var parrots = randInt(3,6);
+    var total = perParrot*parrots;
+    var wrongs = [perParrot+1, perParrot-1, parrots, total-perParrot];
+    return {
+      world:0,
+      diagram: diagramGroups(parrots, perParrot, function(s){ return svgFeather(s, "#E8604C"); }),
+      text: total+" feathers were shared equally among "+parrots+" parrots. How many feathers does each parrot get?",
+      type:"choice",
+      choices: makeChoices(perParrot, wrongs),
+      correct: perParrot,
+      explain: total+" \u00F7 "+parrots+" = "+perParrot+". Sharing equally is what division tells us."
+    };
+  });
+
+  GENERATORS.push(function(){ // C: multiplication word problem (triceratops horns)
+    var count = randInt(4,9);
+    var each = 3;
+    var correct = count*each;
+    return {
+      world:0,
+      diagram: diagramArray(1, count, function(s){ return svgTriceratops(s+18); }),
+      text: "Each triceratops has "+each+" horns. There are "+count+" triceratops on the ridge. How many horns are there altogether?",
+      type:"choice",
+      choices: makeChoices(correct, [correct+3, correct-3, count+each, correct+each]),
+      correct: correct,
+      explain: count+" \u00D7 "+each+" = "+correct+" horns."
+    };
+  });
+
+  GENERATORS.push(function(){ // D: missing factor
+    var a = randInt(3,9);
+    var b = randInt(3,9);
+    var correct = b;
+    var product = a*b;
+    return {
+      world:0,
+      diagram: '<div style="display:flex; align-items:center; gap:10px;">'+diagramArray(1,a,function(s){return svgFootprint(s,'#2E6B4F');})+'<span style="font-weight:800; font-size:1.3rem;">\u00D7 '+qmark(30)+' = '+product+'</span></div>',
+      text: "A trail has "+a+" footprints in each row and "+product+" footprints in total. How many rows are there?",
+      type:"choice",
+      choices: makeChoices(correct, [correct+1, correct-1, a, product-a]),
+      correct: correct,
+      explain: a+" \u00D7 "+correct+" = "+product+", so there are "+correct+" rows."
+    };
+  });
+
+  GENERATORS.push(function(){ // E: division grouping visual
+    var groupSize = randInt(2,6);
+    var groups = randInt(3,6);
+    var total = groupSize*groups;
+    return {
+      world:0,
+      diagram: diagramGroups(groups, groupSize, function(s){ return svgEgg(s,"#FBF3DE", false); }),
+      text: total+" eggs are arranged into nests of "+groupSize+" eggs each. How many nests are there?",
+      type:"choice",
+      choices: makeChoices(groups, [groups+1, groups-1, groupSize, total-groups]),
+      correct: groups,
+      explain: total+" \u00F7 "+groupSize+" = "+groups+" nests."
+    };
+  });
+
+  // --- WORLD 1: Egg Canyon — fractions & decimals ---
+  GENERATORS.push(function(){ // F: equivalent fraction (bar vs choices)
+    var den = [4,6,8][randInt(0,2)];
+    var num = randInt(1, den-1);
+    // simplify to check for an equivalent option too
+    function gcd(a,b){ return b?gcd(b,a%b):a; }
+    var g = gcd(num,den);
+    var simpNum = num/g, simpDen = den/g;
+    var correctLabel = num+"/"+den;
+    var pool = [ (num+1)+"/"+den, num+"/"+(den+2>12?den:den+2), (den-num)+"/"+den, simpNum+"/"+simpDen ];
+    var choices = makeChoices(correctLabel, pool, function(x){return x;});
+    // ensure correct one is actually included (string-based makeChoices needs raw label as "value")
+    return {
+      world:1,
+      diagram: diagramFractionBar(num, den, "#E8604C", "#FBF3DE"),
+      text: "Zara shaded part of a feather bar. Which fraction matches the shaded part?",
+      type:"choice",
+      choices: choices,
+      correct: correctLabel,
+      explain: num+" out of "+den+" parts are shaded, so the fraction is "+num+"/"+den+"."
+    };
+  });
+
+  GENERATORS.push(function(){ // G: comparing fractions with two pie eggs
+    var den = 8;
+    var numA = randInt(2,7);
+    var numB = randInt(2,7);
+    while(numB === numA){ numB = randInt(2,7); }
+    var biggerIsA = numA > numB;
+    var correctLabel = biggerIsA ? "Egg A" : "Egg B";
+    return {
+      world:1,
+      diagram: '<div style="display:flex; gap:26px; align-items:center;">'
+        + '<div style="text-align:center;">'+diagramFractionCircle(numA, den, "#F2A65A", "#FBF3DE")+'<div style="font-weight:700; margin-top:4px;">Egg A ('+numA+'/'+den+')</div></div>'
+        + '<div style="text-align:center;">'+diagramFractionCircle(numB, den, "#5FAE86", "#FBF3DE")+'<div style="font-weight:700; margin-top:4px;">Egg B ('+numB+'/'+den+')</div></div>'
+        + '</div>',
+      text: "Two dinosaur eggs are cracking open. Which egg is more than half hatched?",
+      type:"choice",
+      choices: [ {value:"Egg A", label:"Egg A"}, {value:"Egg B", label:"Egg B"}, {value:"Both the same", label:"Both the same"}, {value:"Not enough info", label:"Not enough info"} ],
+      correct: correctLabel,
+      explain: numA+"/"+den+" and "+numB+"/"+den+" have the same bottom number, so the one with the bigger top number is bigger \u2014 that's "+correctLabel+"."
+    };
+  });
+
+  GENERATORS.push(function(){ // H: adding fractions, same denominator
+    var den = [5,6,8][randInt(0,2)];
+    var a = randInt(1, den-2);
+    var b = randInt(1, den-a-1);
+    if(b<1) b=1;
+    var correctNum = a+b;
+    var correctLabel = correctNum+"/"+den;
+    var pool = [ (correctNum+1)+"/"+den, (correctNum-1)+"/"+den, a+"/"+den, (a+b)+"/"+(den+den) ];
+    return {
+      world:1,
+      diagram: '<div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;">'+diagramFractionBar(a,den,"#E8604C","#FBF3DE")+'<span style="font-weight:800; font-size:1.2rem;">+</span>'+diagramFractionBar(b,den,"#F2A65A","#FBF3DE")+'</div>',
+      text: "Zara ate "+a+"/"+den+" of a fruit tray, then "+b+"/"+den+" more. What fraction of the tray has she eaten in total?",
+      type:"choice",
+      choices: makeChoices(correctLabel, pool, function(x){return x;}),
+      correct: correctLabel,
+      explain: a+"/"+den+" + "+b+"/"+den+" = "+correctNum+"/"+den+". When the bottom numbers match, just add the top numbers."
+    };
+  });
+
+  GENERATORS.push(function(){ // I: comparing decimals (footprints)
+    var a = (randInt(20,45)/10).toFixed(1);
+    var b = (randInt(20,45)/10).toFixed(1);
+    while(b===a){ b = (randInt(20,45)/10).toFixed(1); }
+    var biggerIsA = parseFloat(a) > parseFloat(b);
+    var correctLabel = biggerIsA ? "Print A" : "Print B";
+    return {
+      world:1,
+      diagram: '<div style="display:flex; gap:30px; align-items:flex-end;">'
+        + '<div style="text-align:center;">'+svgFootprint(70,"#2E6B4F",0)+'<div style="font-weight:700;">Print A: '+a+' m</div></div>'
+        + '<div style="text-align:center;">'+svgFootprint(70,"#E8604C",-10)+'<div style="font-weight:700;">Print B: '+b+' m</div></div>'
+        + '</div>',
+      text: "Two fossilized footprints were measured in meters. Which footprint is longer?",
+      type:"choice",
+      choices: [ {value:"Print A", label:"Print A"}, {value:"Print B", label:"Print B"}, {value:"Exactly the same", label:"Exactly the same"}, {value:"Cannot tell", label:"Cannot tell"} ],
+      correct: correctLabel,
+      explain: a+" m and "+b+" m \u2014 compare the digits after the decimal point. "+correctLabel+" is longer."
+    };
+  });
+
+  GENERATORS.push(function(){ // J: fraction of a group
+    var den = [3,4,5][randInt(0,2)];
+    var groupsOf = randInt(2,4);
+    var total = den*groupsOf;
+    var num = randInt(1,den-1);
+    var correct = num*groupsOf;
+    return {
+      world:1,
+      diagram: diagramArray(Math.ceil(total/6), Math.min(total,6), function(s){ return svgFeather(s,"#F2A65A"); }),
+      text: "Zara has "+total+" feathers in her collection. "+num+"/"+den+" of them are sunset-orange. How many sunset-orange feathers does she have?",
+      type:"choice",
+      choices: makeChoices(correct, [correct+groupsOf, correct-groupsOf, den, total-correct]),
+      correct: correct,
+      explain: total+" \u00F7 "+den+" = "+groupsOf+" in each part, and "+num+" parts are orange, so "+groupsOf+" \u00D7 "+num+" = "+correct+"."
+    };
+  });
+
+  // --- WORLD 2: Fossil Ridge — area, perimeter, patterns, multi-step ---
+  GENERATORS.push(function(){ // K: area by counting
+    var w = randInt(3,7), h = randInt(2,5);
+    var correct = w*h;
+    return {
+      world:2,
+      diagram: diagramRectGrid(w,h, function(s){ return svgFootprint(s,"#2E6B4F"); }, w+" \u00D7 "+h+" footprint grid"),
+      text: "Paleontologists mapped a dig site with footprints in a grid. How many square meters (footprint squares) make up the whole site?",
+      type:"choice",
+      choices: makeChoices(correct, [w+h, correct+w, correct-h, (w+1)*h]),
+      correct: correct,
+      explain: "Area = length \u00D7 width = "+w+" \u00D7 "+h+" = "+correct+" square meters."
+    };
+  });
+
+  GENERATORS.push(function(){ // L: perimeter
+    var w = randInt(4,10), h = randInt(3,8);
+    var correct = 2*(w+h);
+    return {
+      world:2,
+      diagram: diagramPerimeterRect(w,h),
+      text: "A rectangular dino pen is "+w+" meters long and "+h+" meters wide. How many meters of fence are needed to go all the way around it?",
+      type:"choice",
+      choices: makeChoices(correct, [w*h, w+h, correct+2, correct-2]),
+      correct: correct,
+      explain: "Perimeter = 2 \u00D7 (length + width) = 2 \u00D7 ("+w+" + "+h+") = "+correct+" meters."
+    };
+  });
+
+  GENERATORS.push(function(){ // M: color pattern
+    var palette = ["#E8604C","#F2A65A","#FFCF56","#5FAE86"];
+    var patLen = randInt(2,3);
+    var pattern = [];
+    for(var i=0;i<patLen;i++) pattern.push(palette[randInt(0,3)]);
+    var sequence = [];
+    for(var r=0;r<3;r++) sequence = sequence.concat(pattern);
+    var nextColor = pattern[sequence.length % patLen];
+    var shown = sequence.slice(0, sequence.length);
+    var items = shown.map(function(c){ return svgFeather(50,c); });
+    items.push(qmark(28));
+    var colorNames = {"#E8604C":"coral","#F2A65A":"amber","#FFCF56":"sunny yellow","#5FAE86":"green"};
+    var options = shuffle(palette.slice()).slice(0,4);
+    if(options.indexOf(nextColor)===-1){ options[0] = nextColor; options = shuffle(options); }
+    return {
+      world:2,
+      diagram: diagramSequence(items),
+      text: "Zara is lining up feathers in a repeating pattern. What color comes next?",
+      type:"choice",
+      choices: options.map(function(c){ return {value:c, label:colorNames[c]}; }),
+      correct: nextColor,
+      explain: "The pattern repeats every "+patLen+" feathers, so the next one is "+colorNames[nextColor]+"."
+    };
+  });
+
+  GENERATORS.push(function(){ // N: skip counting / missing number
+    var step = [2,3,4,5][randInt(0,3)];
+    var start = randInt(2,10);
+    var seq = [start, start+step, start+step*2, start+step*3];
+    var missingIdx = randInt(1,3);
+    var correct = seq[missingIdx];
+    var display = seq.map(function(v,i){ return i===missingIdx ? qmark(30) : '<div style="font-family:Baloo 2; font-weight:800; font-size:1.3rem; color:var(--jungle-deep); width:44px; text-align:center;">'+v+'</div>'; });
+    return {
+      world:2,
+      diagram: diagramSequence(display),
+      text: "Dino nests are counted in a pattern: "+seq.map(function(v,i){return i===missingIdx?"?":v;}).join(", ")+". What number is missing?",
+      type:"choice",
+      choices: makeChoices(correct, [correct+step, correct-step, correct+1, correct-1]),
+      correct: correct,
+      explain: "Each step adds "+step+", so the missing number is "+correct+"."
+    };
+  });
+
+  GENERATORS.push(function(){ // O: multi-step word problem
+    var nests = randInt(3,5);
+    var perNest = randInt(3,5);
+    var hatched = randInt(2, nests*perNest - 2);
+    var total = nests*perNest;
+    var correct = total - hatched;
+    return {
+      world:2,
+      diagram: diagramGroups(nests, perNest, function(s){ return svgEgg(s, "#FBF3DE", false); }),
+      text: "Zara found "+nests+" nests with "+perNest+" eggs in each nest. So far, "+hatched+" eggs have hatched. How many eggs are still unhatched?",
+      type:"choice",
+      choices: makeChoices(correct, [total, hatched, correct+2, correct-2]),
+      correct: correct,
+      explain: nests+" \u00D7 "+perNest+" = "+total+" eggs in total. "+total+" \u2212 "+hatched+" = "+correct+" still unhatched."
+    };
+  });
+
+  var WORLDS = [
+    { name:"Feather Forest", icon: svgParrot(34), species:{ name:"Scarlet Macaw", fact:"Macaws can crack tough nuts using their strong, curved beaks." } },
+    { name:"Egg Canyon", icon: svgEgg(30, "#F2A65A", true), species:{ name:"Maiasaura", fact:"Maiasaura means \u2018good mother lizard\u2019 \u2014 they cared for their hatchlings in nests." } },
+    { name:"Fossil Ridge", icon: svgFootprint(30,"#2E6B4F",0), species:{ name:"Stegosaurus", fact:"The plates on a Stegosaurus's back may have helped it control its body temperature." } }
+  ];
+
+  /* ============================================================
+     GAME STATE
+     ============================================================ */
+  var state = {};
+
+  function buildQuestionSet(){
+    // Fixed generator order (grouped by world) but freshly randomized each time.
+    return GENERATORS.map(function(gen){ return gen(); });
+  }
+
+  function resetState(){
+    state = {
+      questions: buildQuestionSet(),
+      index: 0,
+      feathers: 0,
+      correctCount: 0,
+      eggsHatched: 0,
+      answered: false
+    };
+  }
+
+  /* ============================================================
+     RENDERING
+     ============================================================ */
+  var screens = {
+    start: document.getElementById('screen-start'),
+    quiz: document.getElementById('screen-quiz'),
+    results: document.getElementById('screen-results')
+  };
+  function showScreen(name){
+    Object.keys(screens).forEach(function(k){ screens[k].classList.toggle('active', k===name); });
+  }
+
+  function renderQuestion(){
+    var q = state.questions[state.index];
+    var world = WORLDS[q.world];
+
+    document.getElementById('world-icon').innerHTML = world.icon;
+    document.getElementById('world-name-text').textContent = world.name;
+    document.getElementById('q-counter').textContent = "Question "+(state.index+1)+" of "+state.questions.length;
+    document.getElementById('feather-count').textContent = state.feathers;
+    document.getElementById('egg-count').textContent = state.eggsHatched;
+
+    var pct = Math.round((state.index)/state.questions.length*100);
+    document.getElementById('track-fill').style.width = pct+"%";
+    for(var i=0;i<3;i++){
+      var dot = document.getElementById('dot-'+i);
+      dot.className = 'world-dot' + (i<q.world?' done':'') + (i===q.world?' current':'');
+    }
+
+    document.getElementById('diagram-area').innerHTML = q.diagram;
+    document.getElementById('question-text').textContent = q.text;
+
+    var answerArea = document.getElementById('answer-area');
+    answerArea.innerHTML = '';
+    var choicesWrap = document.createElement('div');
+    choicesWrap.className = 'choices';
+    q.choices.forEach(function(choice){
+      var btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.type = 'button';
+      btn.textContent = choice.label;
+      btn.addEventListener('click', function(){ handleAnswer(choice.value, btn); });
+      choicesWrap.appendChild(btn);
+    });
+    answerArea.appendChild(choicesWrap);
+
+    var fb = document.getElementById('feedback');
+    fb.className = 'feedback';
+    document.getElementById('next-btn').style.display = 'none';
+    state.answered = false;
+  }
+
+  function handleAnswer(value, btnEl){
+    if(state.answered) return;
+    state.answered = true;
+    var q = state.questions[state.index];
+    var isCorrect = value === q.correct;
+
+    var allBtns = document.querySelectorAll('#answer-area .choice');
+    allBtns.forEach(function(b){
+      b.disabled = true;
+      if(b === btnEl){ b.classList.add(isCorrect ? 'correct' : 'wrong'); }
+    });
+    if(!isCorrect){
+      allBtns.forEach(function(b){
+        if(b.textContent === (q.choices.find(function(c){return c.value===q.correct;})||{}).label){
+          b.classList.add('correct');
+        }
+      });
+    }
+
+    var fb = document.getElementById('feedback');
+    var iconWrap = document.getElementById('feedback-icon');
+    var titleEl = document.getElementById('feedback-title');
+    var explainEl = document.getElementById('feedback-explain');
+
+    if(isCorrect){
+      state.feathers += 1;
+      state.correctCount += 1;
+      fb.className = 'feedback show good';
+      iconWrap.innerHTML = svgFeather(46, "#3E8A5B");
+      var praises = ["Great flying!", "Sharp eyes!", "Zara is impressed!", "Nailed it!", "Wonderful work!"];
+      titleEl.textContent = praises[randInt(0,praises.length-1)];
+    } else {
+      fb.className = 'feedback show retry';
+      iconWrap.innerHTML = svgEgg(46, "#F2A65A", false);
+      titleEl.textContent = "Good try \u2014 here's the answer:";
+    }
+    explainEl.textContent = q.explain;
+    document.getElementById('feather-count').textContent = state.feathers;
+
+    // world completion egg-hatch bonus
+    var isLastOfWorld = (state.index+1) % 5 === 0;
+    if(isLastOfWorld){ state.eggsHatched += 1; }
+    document.getElementById('egg-count').textContent = state.eggsHatched;
+
+    document.getElementById('next-btn').style.display = 'inline-block';
+  }
+
+  function goNext(){
+    state.index += 1;
+    if(state.index >= state.questions.length){
+      renderResults();
+      showScreen('results');
+    } else {
+      renderQuestion();
+    }
+  }
+
+  function renderResults(){
+    document.getElementById('track-fill').style.width = '100%';
+    document.getElementById('res-feathers').textContent = state.feathers;
+    document.getElementById('res-accuracy').textContent = Math.round(state.correctCount/state.questions.length*100)+"%";
+    document.getElementById('res-eggs').textContent = state.eggsHatched;
+    document.getElementById('cert-art').innerHTML = svgSun(70);
+
+    var row = document.getElementById('species-row');
+    row.innerHTML = '';
+    WORLDS.forEach(function(w, i){
+      var iconFn = i===0 ? svgParrot : (i===1 ? function(s){return svgRex(s);} : function(s){return svgStegosaurus(s);});
+      var card = document.createElement('div');
+      card.className = 'species-card';
+      card.innerHTML = iconFn(60) + '<div class="name">'+w.species.name+'</div><div class="fact">'+w.species.fact+'</div>';
+      row.appendChild(card);
+    });
+  }
+
+  /* ============================================================
+     SPEECH (optional read-aloud, for independent reading)
+     ============================================================ */
+  function readAloud(text){
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    window.speechSynthesis.speak(utter);
+  }
+
+  /* ============================================================
+     WIRE UP EVENTS
+     ============================================================ */
+  document.getElementById('start-art').innerHTML =
+    '<div style="display:flex; align-items:flex-end; gap:18px;">'+svgParrot(96)+svgEgg(60,"#F2A65A",false)+svgTriceratops(90)+'</div>';
+
+  document.getElementById('start-btn').addEventListener('click', function(){
+    resetState();
+    renderQuestion();
+    showScreen('quiz');
+  });
+
+  document.getElementById('next-btn').addEventListener('click', goNext);
+
+  document.getElementById('replay-btn').addEventListener('click', function(){
+    resetState();
+    renderQuestion();
+    showScreen('quiz');
+  });
+
+  document.getElementById('speak-btn').addEventListener('click', function(){
+    var q = state.questions[state.index];
+    if(q) readAloud(q.text);
+  });
+
+})();
+</script>
+</body>
+</html>
